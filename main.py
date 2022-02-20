@@ -140,9 +140,16 @@ def main():
     print(f'msg: {msg}')
     print(f'     {str2int(msg):X}')
 
+    print('ECB:')
+    ct = cipher(msg, 16)
+    print(f'ct:  {bytes2int(ct):X}')
+    dt = decipher(ct, 16)
+    print(f'dc:  {dt}')
+    print(f'     {str2int(dt):X}')
+
+    print('CBC:')
     ct = cipher(msg, 16, 'cbc')
     print(f'ct:  {bytes2int(ct):X}')
-
     dt = decipher(ct, 16, 'cbc')
     print(f'dc:  {dt}')
     print(f'     {str2int(dt):X}')
