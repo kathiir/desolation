@@ -95,9 +95,43 @@ def cipher(msg, N=8, mode='ecb', debug=False):
             blocks_copy[i] = int2bytes(blocks_copy[i])
             ct.append(blocks_copy[i])
         ct = b''.join(ct)
+    elif mode == 'cfb':
+        block = IV
+        blocks_copy = blocks.copy()
+        for i in range(len(blocks_copy)):
+            blocks_copy[i] = str2int(blocks_copy[i])
+        for i in range(len(blocks)):
+            block = cipher_block(block)
+            blocks_copy[i] = blocks_copy[i] ^ block
+            block = blocks_copy[i]
+        for i in range(len(blocks_copy)):
+            blocks_copy[i] = int2bytes(blocks_copy[i])
+            ct.append(blocks_copy[i])
+        ct = b''.join(ct)
     elif mode == 'ofb':
-        pass
-
+        block = IV
+        blocks_copy = blocks.copy()
+        for i in range(len(blocks_copy)):
+            blocks_copy[i] = str2int(blocks_copy[i])
+        for i in range(len(blocks)):
+            block = cipher_block(block)
+            blocks_copy[i] = blocks_copy[i] ^ block
+        for i in range(len(blocks_copy)):
+            blocks_copy[i] = int2bytes(blocks_copy[i])
+            ct.append(blocks_copy[i])
+        ct = b''.join(ct)
+    elif mode == 'ctr':
+        counter = IV
+        blocks_copy = blocks.copy()
+        for i in range(len(blocks_copy)):
+            blocks_copy[i] = str2int(blocks_copy[i])
+        for i in range(len(blocks)):
+            block = cipher_block(counter + i)
+            blocks_copy[i] = blocks_copy[i] ^ block
+        for i in range(len(blocks_copy)):
+            blocks_copy[i] = int2bytes(blocks_copy[i])
+            ct.append(blocks_copy[i])
+        ct = b''.join(ct)
 
     return ct
 
@@ -127,8 +161,44 @@ def decipher(ct, N=8, mode='ecb', debug=False):
             blocks_copy[i] = int2str(blocks_copy[i])
             msg.append(blocks_copy[i])
         msg = ''.join(msg)
+    elif mode == 'cfb':
+        block = IV
+        blocks_copy = blocks.copy()
+        for i in range(len(blocks_copy)):
+            blocks_copy[i] = bytes2int(blocks_copy[i])
+        for i in range(len(blocks)):
+            block = cipher_block(block)
+            tmp = blocks_copy[i]
+            blocks_copy[i] = blocks_copy[i] ^ block
+            block = tmp
+        for i in range(len(blocks_copy)):
+            blocks_copy[i] = int2str(blocks_copy[i])
+            msg.append(blocks_copy[i])
+        msg = ''.join(msg)
     elif mode == 'ofb':
-        pass
+        block = IV
+        blocks_copy = blocks.copy()
+        for i in range(len(blocks_copy)):
+            blocks_copy[i] = bytes2int(blocks_copy[i])
+        for i in range(len(blocks)):
+            block = cipher_block(block)
+            blocks_copy[i] = blocks_copy[i] ^ block
+        for i in range(len(blocks_copy)):
+            blocks_copy[i] = int2str(blocks_copy[i])
+            msg.append(blocks_copy[i])
+        msg = ''.join(msg)
+    elif mode == 'ctr':
+        counter = IV
+        blocks_copy = blocks.copy()
+        for i in range(len(blocks_copy)):
+            blocks_copy[i] = bytes2int(blocks_copy[i])
+        for i in range(len(blocks)):
+            block = cipher_block(counter + i)
+            blocks_copy[i] = blocks_copy[i] ^ block
+        for i in range(len(blocks_copy)):
+            blocks_copy[i] = int2str(blocks_copy[i])
+            msg.append(blocks_copy[i])
+        msg = ''.join(msg)
 
     msg = unpadding(msg)
     return msg
@@ -151,6 +221,27 @@ def main():
     ct = cipher(msg, 16, 'cbc')
     print(f'ct:  {bytes2int(ct):X}')
     dt = decipher(ct, 16, 'cbc')
+    print(f'dc:  {dt}')
+    print(f'     {str2int(dt):X}')
+
+    print('CFB:')
+    ct = cipher(msg, 16, 'cfb')
+    print(f'ct:  {bytes2int(ct):X}')
+    dt = decipher(ct, 16, 'cfb')
+    print(f'dc:  {dt}')
+    print(f'     {str2int(dt):X}')
+
+    print('OFB:')
+    ct = cipher(msg, 16, 'ofb')
+    print(f'ct:  {bytes2int(ct):X}')
+    dt = decipher(ct, 16, 'ofb')
+    print(f'dc:  {dt}')
+    print(f'     {str2int(dt):X}')
+
+    print('CTR:')
+    ct = cipher(msg, 16, 'ctr')
+    print(f'ct:  {bytes2int(ct):X}')
+    dt = decipher(ct, 16, 'ctr')
     print(f'dc:  {dt}')
     print(f'     {str2int(dt):X}')
 
